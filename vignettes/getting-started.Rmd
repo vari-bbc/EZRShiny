@@ -1,0 +1,413 @@
+---
+title: "Getting started with EZRShiny"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with EZRShiny}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
+```
+
+EZRShiny helps you build multi-page 'shiny' apps that all look and work the
+same way. Instead of assembling pages, navigation bars, cards and sidebars from
+'bslib' yourself, you describe the app as a set of tabs and fill them with
+inputs and outputs, each built with one short function call.
+
+This guide covers:
+
+1. [Starting a new app](#starting-a-new-app)
+2. [How an app is laid out](#how-an-app-is-laid-out)
+3. [The page](#the-page)
+4. [Tabs](#tabs)
+5. [Inputs](#inputs)
+6. [Outputs](#outputs)
+7. [The server](#the-server)
+8. [The example app](#the-example-app)
+9. [Moving an existing app to EZRShiny](#moving-an-existing-app-to-ezrshiny)
+
+## Starting a new app
+
+`createEZApp()` makes a folder with a working app in it, ready to edit:
+
+```{r}
+library(EZRShiny)
+
+createEZApp("myApp", appName = "My App")
+shiny::runApp("myApp")
+```
+
+The app has an upload page and a results tab with a table. Upload any CSV and
+click **Run** to see it work, then replace the pieces with your own.
+
+## How an app is laid out
+
+Every EZRShiny app uses the same folder layout:
+
+```
+myApp/
+├── app.R               packages, UI and server
+├── Functions/          your helper functions, one or more .R files
+├── Necessary_Files/    files the app needs at start, such as a data template
+└── www/                images for the page, such as logos
+```
+
+`app.R` is split into numbered sections, so every app reads in the same order:
+
+```{r}
+# App Startup ----
+## 1.0 Load Libraries ----
+library(shiny)
+library(bslib)
+library(shinyjs)
+library(EZRShiny)
+
+## 2.0 Load Basics ----
+options(shiny.maxRequestSize = 300 * 1024^2)   # allow uploads up to 300 MB
+sourceFunctions("Functions")                    # load every .R file in Functions/
+
+## 3.0 Universal Vars ----
+appName <- "My App"
+
+# UI ----
+ui <- UINav(...)
+
+# Server ----
+server <- function(input, output, session) { ... }
+
+# Run App ----
+shinyApp(ui = ui, server = server)
+```
+
+`sourceFunctions()` loads every `.R` file in a folder, so adding a helper is
+just a matter of saving a new file in `Functions/`. The files load in
+alphabetical order, which is why numbering them (`1-Read_In_Data.R`,
+`2-Plots.R`) is a good habit.
+
+## The page
+
+`UINav()` builds the whole page. Everything else in the UI goes inside it:
+
+```{r}
+ui <- UINav(
+  logoFile = "logo.png",   # from the www folder; leave out for no logo
+  appName = "My App",      # leave out to use a global appName variable
+  barColor = "#1F4E79",    # navigation bar color; leave out for the theme default
+
+  singleTab("Upload", ...),
+  biLevelTab("Results", ...)
+)
+```
+
+The navigation bar shows, from left to right: the logos, the app name, one
+entry per tab, and a dark mode switch.
+
+| Argument     | What it does | Default |
+|--------------|--------------|---------|
+| `logoFile`   | Image file names in `www/`, shown in order. Several logos are allowed: `c("institute.png", "lab.svg")`. | no logo |
+| `appName`    | App name shown after the logos. | the global `appName` variable, if there is one |
+| `logoHeight` | Height of each logo, as a CSS size. | `"40vh"` |
+| `barColor`   | Navigation bar color. Text switches between light and dark to stay readable. | theme default |
+| `theme`      | A `bslib::bs_theme()` for the whole app, for example `bs_theme(preset = "cosmo", primary = "#005596")`. | `bs_theme()` |
+
+## Tabs
+
+Tabs come in two kinds: **top-level tabs**, which go straight into `UINav()`,
+and **sub tabs**, which go inside a top-level tab.
+
+### Top-level tabs
+
+| Function            | Holds | Put inside it |
+|---------------------|-------|---------------|
+| `singleTab()`       | one page | inputs and outputs |
+| `sidebarLevelTab()` | one page with a sidebar | inputs and outputs |
+| `biLevelTab()`      | a row of sub tabs | `subTab()`, `subSidebarTab()` |
+| `triLevelTab()`     | a drop-down menu, where each entry has its own row of sub tabs | `triSubTab()`, `triSubSidebarTab()` |
+
+### Sub tabs
+
+| Function             | Holds |
+|----------------------|-------|
+| `subTab()`           | inputs and outputs |
+| `subSidebarTab()`    | a sidebar, plus inputs and outputs |
+| `triSubTab()`        | a row of `subTab()`s or `subSidebarTab()`s (inside `triLevelTab()` only) |
+| `triSubSidebarTab()` | a sidebar, plus a row of sub tabs (inside `triLevelTab()` only) |
+
+`subTwoColPage(leftSide, rightSide)` isn't a tab: it splits any page into two
+equal columns.
+
+### Putting them together
+
+Sidebars take their inputs as a `list()` in `sidebarElements`. Everything after
+that fills the main part of the page:
+
+```{r}
+ui <- UINav(
+  appName = "Tab Tour",
+
+  # One page
+  singleTab("Upload",
+    navUpload("dataUpload", "Upload a CSV")
+  ),
+
+  # One page with a sidebar
+  sidebarLevelTab("Table",
+    sidebarElements = list(
+      navSelect("columns", "Columns to show", multiple = TRUE)
+    ),
+    navOutputTable("dataTable")
+  ),
+
+  # A row of sub tabs
+  biLevelTab("Plots",
+    subSidebarTab("Scatter",
+      sidebarElements = list(navButton("makeScatter", "Make plot")),
+      navOutputPlot("scatterPlot")
+    ),
+    subTab("Side by Side",
+      subTwoColPage(navOutputPlot("leftPlot"), navOutputPlot("rightPlot"))
+    )
+  ),
+
+  # A menu of tabs, each with its own sub tabs
+  triLevelTab("Models",
+    triSubTab("Linear",
+      subTab("Fit", navOutputText("linearFit")),
+      subTab("Residuals", navOutputPlot("linearResiduals"))
+    ),
+    triSubSidebarTab("Custom",
+      sidebarElements = list(navText("formula", "Model formula")),
+      subTab("Fit", navOutputText("customFit"))
+    )
+  )
+)
+```
+
+### Tab IDs
+
+Each row of sub tabs has an `id`, and each sub tab has a `value`. You use them
+in the server to show, hide or select tabs. Both default to the title with
+spaces removed: `biLevelTab("Explore Data", ...)` has the ID `"ExploreData"`,
+and `subTab("Box Plots", ...)` has the value `"BoxPlots"`. The server helpers
+remove spaces too, so you can write the titles as they appear on screen.
+
+The navigation bar itself has the ID `"root"`. Top-level tabs keep their titles
+exactly, spaces included.
+
+Each tab's contents sit in a card 85% of the window tall. To change the height
+of one tab, use its `height` argument. To change it for every tab, set the
+option before building the UI:
+
+```{r}
+options(EZRShiny.cardHeight = "70vh")
+```
+
+## Inputs
+
+Every input fills the width of its sidebar or page and takes an optional
+`tooltipText`, which adds an info icon to the label:
+
+```{r}
+navButton("runData", "Run analysis", tooltipText = "Upload your data first.")
+```
+
+Every input starts with `inputId` and `label`, the same as in 'shiny'. The
+other arguments use 'shiny's names too:
+
+| Function        | Makes | Other arguments (defaults) |
+|-----------------|-------|----------------------------|
+| `navButton()`   | a button that shows a spinner while its code runs | |
+| `navSelect()`   | a drop-down list | `choices`, `selected` (first choice), `multiple = FALSE`, `create = FALSE` |
+| `navUpload()`   | a file upload | `multiple = FALSE` |
+| `navDownload()` | a download button | |
+| `navCheckbox()` | an on/off switch | `value = FALSE` (starts off) |
+| `navText()`     | a text box | `value = ""` |
+| `navNumeric()`  | a number box | `value = 1`, `min = NA`, `max = NA` (no limits) |
+| `navColor()`    | a color picker | `value = "white"` |
+| `navDate()`     | a date picker | `range = FALSE` (one date) |
+
+`multiple = TRUE` allows more than one choice or file. `create = TRUE` lets the
+user type in options that aren't in `choices`.
+
+```{r}
+navSelect("pcX", "PC for x-axis", choices = paste0("PC", 1:10))
+navSelect("groups", "Groups to compare", choices = groupNames, multiple = TRUE)
+navSelect("tags", "Tags", choices = c("a", "b"), multiple = TRUE, create = TRUE)
+```
+
+Choices for `navSelect()` can be left out of the UI and filled in from the
+server once data is loaded:
+
+```{r}
+# UI
+navSelect("groups", "Pick groups", multiple = TRUE)
+
+# Server
+updateSelectizeInput(session, "groups", choices = unique(theData$Group))
+```
+
+`navSpanText()` adds a line of text with an info icon, for explaining a page.
+
+## Outputs
+
+Each output is a placeholder the server fills in with the matching render
+function:
+
+| UI                   | Server |
+|----------------------|--------|
+| `navOutputTable()`   | `output$id <- DT::renderDT(...)` |
+| `navOutputPlot()`    | `output$id <- renderPlot(...)` |
+| `navOutputPlotly()`  | `output$id <- plotly::renderPlotly(...)` |
+| `navOutputGirafe()`  | `output$id <- ggiraph::renderGirafe(...)` |
+| `navOutputPic()`     | `output$id <- renderImage(...)` |
+| `sideNavOutputPic()` | `output$id <- renderImage(...)`, 40% wide, for beside another output |
+| `navOutputText()`    | `output$id <- renderText(...)` |
+
+Like inputs, outputs can have a `label` shown above them and a `tooltipText`
+that adds an info icon after the label. Use it to explain how to read a plot
+or table. With a tooltip and no label, only the icon is shown.
+
+```{r}
+navOutputPlotly("pcaPlot", label = "PCA of all samples",
+                tooltipText = "Each point is one sample, colored by group.")
+```
+
+## The server
+
+The server of an EZRShiny app follows a few habits that keep it predictable.
+
+**Keep the user's data in one place.** Store anything that needs to carry
+across the app in one `reactiveValues()` list:
+
+```{r}
+global <- reactiveValues(
+  datasets = list(
+    rawData = NULL
+  )
+)
+```
+
+**Set up the page on start.** Hide tabs and switch off buttons and downloads
+that can't be used yet:
+
+```{r}
+observe({
+  startSection("Run on Start")
+
+  hideNavTabs(rootID = "Results", tabIDs = c("Table", "Plot"))
+  deactivateItems(c("runAnalysis", "resultsDownload"))
+
+  endSection("Run on Start")
+})
+```
+
+**Tie work to buttons.** Code in `observeEvent(input$button, ...)` runs only
+when the button is clicked. Code that reads inputs anywhere else reruns every
+time any of those inputs change.
+
+```{r}
+observeEvent(input$runAnalysis, {
+  startSection("Run Analysis")
+
+  ## Load globals
+  rawData <- global$datasets$rawData
+
+  ## Inputs
+  alpha <- input$alpha
+
+  ## Do things
+  results <- runMyAnalysis(rawData, alpha)
+
+  ## App interactions
+  output$resultsTable <- DT::renderDT({ results })
+  activateItems(c("resultsDownload"))
+  showNavTabs(rootID = "Results", tabIDs = c("Table", "Plot"))
+  nav_select("root", "Results")
+
+  ## Save globals
+  global$datasets$results <- results
+
+  endSection("Run Analysis")
+})
+```
+
+| Helper | What it does |
+|--------|--------------|
+| `activateItems(ids)`, `deactivateItems(ids)` | Switch inputs, buttons or downloads on or off. |
+| `showNavTabs(rootID, tabIDs)`, `hideNavTabs(rootID, tabIDs)` | Show or hide tabs. `showNavTabs()` also selects the first tab given. |
+| `bslib::nav_select("root", "Tab Title")` | Move the user to a top-level tab. |
+| `startSection(name)`, `endSection(name)` | Write markers to the log, so you can see which part of the server is running. |
+
+## The example app
+
+EZRShiny comes with a complete example app, "Titanic Explorer", that explores
+who survived the Titanic using R's built-in `Titanic` data:
+
+```{r}
+runExampleApp()
+```
+
+It uses every piece described above:
+
+| Tab | Built with | Shows |
+|-----|------------|-------|
+| Load Data | `singleTab()` | `navDownload()`, `navCheckbox()`, `navUpload()`, `navButton()`, `navSpanText()` |
+| Passengers | `sidebarLevelTab()` | `navSelect()` filled in from the server, `navOutputTable()` |
+| Survival | `biLevelTab()` with `subSidebarTab()` and `subTab()` | `navColor()`, `navText()`, `navOutputPlot()`, `navOutputPlotly()`, sub tabs revealed with `showNavTabs()` |
+| Compare Groups | `triLevelTab()` with `triSubTab()` and `triSubSidebarTab()` | `navOutputGirafe()`, `subTwoColPage()` |
+
+Every tab except Load Data is hidden until data is loaded, and each download
+is switched off until there's something to download. Its files are a good
+starting point for your own app:
+
+```{r}
+exampleFolder <- system.file("examples", "titanicExplorer", package = "EZRShiny")
+list.files(exampleFolder, recursive = TRUE)
+file.copy(exampleFolder, "myCopy", recursive = TRUE)
+```
+
+## Moving an existing app to EZRShiny
+
+If your app sources a copy of the standards file from its `Functions` folder:
+
+1. Delete the standards file from `Functions/`. The package replaces it.
+2. Replace its `source(...)` line with `library(EZRShiny)`. Keep
+   `sourceFunctions("Functions")` to load your other helpers.
+3. Move `options(shiny.maxRequestSize = ...)` into `app.R` if you need uploads
+   over 5 MB. The package doesn't change options for you.
+4. Logos and colors are now arguments of `UINav()` instead of being built in:
+
+    ```{r}
+    ui <- UINav(
+      logoFile = c("institute_logo.png", "app_logo.png"),
+      logoHeight = c("35vh", "40vh"),
+      appName = appName,
+      barColor = "#005596",
+      ...
+    )
+    ```
+
+5. `cardHeight` is no longer a global variable. Use
+   `options(EZRShiny.cardHeight = "85vh")` or each tab's `height` argument.
+6. Inputs take `TRUE`/`FALSE` instead of short words, and their arguments use
+   'shiny's names. Calls with only an ID, a label and `tooltipText` don't
+   change. The rest change like this:
+
+    | Before | After |
+    |--------|-------|
+    | `navSelect("id", "Label", "Single", "Locked", choices)` | `navSelect("id", "Label", choices)` |
+    | `navSelect("id", "Label", "Multi", "Locked", choices)` | `navSelect("id", "Label", choices, multiple = TRUE)` |
+    | `navSelect("id", "Label", "Single", "Create", choices)` | `navSelect("id", "Label", choices, create = TRUE)` |
+    | `navUpload("id", "Label", "Single")` | `navUpload("id", "Label")` |
+    | `navUpload("id", "Label", "Multi")` | `navUpload("id", "Label", multiple = TRUE)` |
+    | `navCheckbox("id", "Label", "T")` | `navCheckbox("id", "Label", value = TRUE)` |
+    | `navCheckbox("id", "Label", "F")` | `navCheckbox("id", "Label")` |
+    | `navNumeric("id", "Label", 5)` | unchanged, but `min` and `max` now default to no limit instead of 0 and 1 |
+    | `navNumeric(..., theValue = 5)` | `navNumeric(..., value = 5)` |
+    | `navColor(..., colorValue = "red")` | `navColor(..., value = "red")` |
+    | `navDate("id", "Label", TRUE)` | `navDate("id", "Label", range = TRUE)` |
+
+    Passing an old short word such as `"Single"` where `TRUE` or `FALSE` is
+    expected stops with an error that explains the change.

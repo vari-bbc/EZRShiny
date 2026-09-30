@@ -1,0 +1,18 @@
+# R session files
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Build and check output
+*.tar.gz
+*.Rcheck/
+doc/
+Meta/
+vignettes/*.html
+vignettes/*.R
+
+# Editor and system files
+.vscode/
+.DS_Store
+Thumbs.db

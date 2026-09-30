@@ -1,0 +1,46 @@
+Package: EZRShiny
+Type: Package
+Title: Build Consistent 'shiny' App Layouts with Less Code
+Version: 0.1.0
+Authors@R:
+    person("Daniella", "DeWeerd", , "danielladeweerd@gmail.com",
+           role = c("aut", "cre", "cph"))
+Description: Short, consistent wrappers around 'shiny', 'bslib' and 'shinyjs'
+    for building multi-page 'shiny' apps. One function call builds the page
+    with a navigation bar, logo, title and dark mode switch. Tab functions nest
+    pages up to three levels deep, with optional sidebars. Input functions
+    create full-width inputs with optional information tooltips, and helpers
+    switch buttons on and off and show or hide tabs from the server. Includes
+    a starter app template and an example app that explores the Titanic
+    passenger data.
+License: GPL-3
+Encoding: UTF-8
+Language: en-US
+Depends:
+    R (>= 4.1.0)
+Imports:
+    bsicons,
+    bslib (>= 0.7.0),
+    colourpicker,
+    DT,
+    ggiraph (>= 0.9.1),
+    here,
+    plotly (>= 4.12.0),
+    shiny (>= 1.8.0),
+    shinyjs,
+    shinyWidgets,
+    utils
+Suggests:
+    datasets,
+    ggplot2,
+    htmltools,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    withr
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+URL: https://github.com/vari-bbc/EZRShiny
+BugReports: https://github.com/vari-bbc/EZRShiny/issues

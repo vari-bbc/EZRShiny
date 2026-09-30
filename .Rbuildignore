@@ -1,0 +1,17 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+^README\.Rmd$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
+^LICENSE$
+^\.github$
+^\.vscode$
+^\.gitignore$
+^doc$
+^Meta$
+^\.Ruserdata$
+Thumbs\.db$
+\.tar\.gz$
+^vignettes/.*\.html$
+^vignettes/.*\.R$
