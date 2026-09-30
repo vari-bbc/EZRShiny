@@ -39,8 +39,21 @@ contents. Defaults to \code{"85vh"} (85\% of the window height).
 }
 }
 
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/vari-bbc/EZRShiny}
+  \item Report bugs at \url{https://github.com/vari-bbc/EZRShiny/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Daniella DeWeerd \email{danielladeweerd@gmail.com} [copyright holder]
+
+Authors:
+\itemize{
+  \item Daniella DeWeerd \email{danielladeweerd@gmail.com} [copyright holder]
+}
 
 }
 \keyword{internal}

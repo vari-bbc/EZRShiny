@@ -44,13 +44,13 @@ render function in the server, assigned to \verb{output$<outputId>}:
 \details{
 \tabular{lll}{
    Function \tab Fill it in the server with \tab Size \cr
-   \code{navOutputTable()} \tab \code{\link[DT:dataTableOutput]{DT::renderDT()}} \tab full width \cr
+   \code{navOutputTable()} \tab \code{\link[DT:renderDT]{DT::renderDT()}} \tab full width \cr
    \code{navOutputPlot()} \tab \code{\link[shiny:renderPlot]{shiny::renderPlot()}} \tab 80\% wide \cr
-   \code{navOutputPlotly()} \tab \code{\link[plotly:plotly-shiny]{plotly::renderPlotly()}} \tab 80\% wide, full window height \cr
+   \code{navOutputPlotly()} \tab \code{\link[plotly:renderPlotly]{plotly::renderPlotly()}} \tab 80\% wide, full window height \cr
    \code{navOutputGirafe()} \tab \code{\link[ggiraph:renderGirafe]{ggiraph::renderGirafe()}} \tab 80\% wide, full window height \cr
    \code{navOutputPic()} \tab \code{\link[shiny:renderImage]{shiny::renderImage()}} \tab 80\% of the window wide, full window height \cr
    \code{sideNavOutputPic()} \tab \code{\link[shiny:renderImage]{shiny::renderImage()}} \tab 40\% wide, for beside another output \cr
-   \code{navOutputText()} \tab \code{\link[shiny:renderPrint]{shiny::renderText()}} \tab as needed \cr
+   \code{navOutputText()} \tab \code{\link[shiny:renderText]{shiny::renderText()}} \tab as needed \cr
 }
 
 

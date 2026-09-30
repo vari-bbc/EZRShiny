@@ -47,7 +47,7 @@ navDate(inputId, label, range = FALSE, tooltipText = NA)
 \item{tooltipText}{Optional text for an info tooltip on the label.}
 
 \item{choices}{Choices to offer. Can be left \code{NULL} and filled in later
-from the server with \code{\link[shiny:updateSelectInput]{shiny::updateSelectizeInput()}}.}
+from the server with \code{\link[shiny:updateSelectizeInput]{shiny::updateSelectizeInput()}}.}
 
 \item{selected}{Choices selected at start. Defaults to the first choice.}
 
@@ -78,14 +78,14 @@ to the label (see \code{\link[=addTooltip]{addTooltip()}}).
 \tabular{lll}{
    Function \tab Builds \tab Read in the server as \cr
    \code{navButton()} \tab \code{\link[bslib:input_task_button]{bslib::input_task_button()}} \tab \code{input$id} (click count) \cr
-   \code{navSelect()} \tab \code{\link[shiny:selectInput]{shiny::selectizeInput()}} \tab \code{input$id} (chosen values) \cr
+   \code{navSelect()} \tab \code{\link[shiny:selectizeInput]{shiny::selectizeInput()}} \tab \code{input$id} (chosen values) \cr
    \code{navUpload()} \tab \code{\link[shiny:fileInput]{shiny::fileInput()}} \tab \code{input$id$datapath}, \code{input$id$name} \cr
    \code{navDownload()} \tab \code{\link[shiny:downloadButton]{shiny::downloadButton()}} \tab pair with \code{output$id <- downloadHandler(...)} \cr
    \code{navCheckbox()} \tab \code{\link[bslib:input_switch]{bslib::input_switch()}} \tab \code{input$id} (\code{TRUE}/\code{FALSE}) \cr
    \code{navText()} \tab \code{\link[shiny:textInput]{shiny::textInput()}} \tab \code{input$id} \cr
    \code{navNumeric()} \tab \code{\link[shiny:numericInput]{shiny::numericInput()}} \tab \code{input$id} \cr
    \code{navColor()} \tab \code{\link[colourpicker:colourInput]{colourpicker::colourInput()}} \tab \code{input$id} (hex color) \cr
-   \code{navDate()} \tab \code{\link[shinyWidgets:airDatepicker]{shinyWidgets::airDatepickerInput()}} \tab \code{input$id} (one or two dates) \cr
+   \code{navDate()} \tab \code{\link[shinyWidgets:airDatepickerInput]{shinyWidgets::airDatepickerInput()}} \tab \code{input$id} (one or two dates) \cr
 }
 }
 \examples{
