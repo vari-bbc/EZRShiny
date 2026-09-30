@@ -35,7 +35,22 @@ Once EZRShiny is on CRAN:
 install.packages("EZRShiny")
 ```
 
-Until then, install it from its folder:
+Until then, install the latest version from GitHub:
+
+```r
+# install.packages("remotes")
+remotes::install_github("vari-bbc/EZRShiny")
+```
+
+This skips the "Getting started" guide by default. To install the guide too,
+so `vignette("getting-started", package = "EZRShiny")` works (this needs
+[pandoc](https://pandoc.org/installing.html), which RStudio includes):
+
+```r
+remotes::install_github("vari-bbc/EZRShiny", build_vignettes = TRUE)
+```
+
+Or install from a local copy of the folder:
 
 ```r
 # install.packages("devtools")
